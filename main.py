@@ -1,23 +1,27 @@
 import websockets
 import asyncio
+from data_client import Client
 
 all_clients = []
 
 
-async def send_message(message: str):
+async def send_message(message: str) -> None:
     for client in all_clients:
-        await client.send(message)
+        await client.client_socket.send(message)
 
 
-async def new_client_connected(client_socket: websockets.WebSocketClientProtocol, path: str):
+async def new_client_connected(client_socket: websockets.WebSocketClientProtocol, path: str) -> None:
     print('New client connected', path)
-    all_clients.append(client_socket)
-    await message_recv(client_socket)
+    await client_socket.send('Введите ваше имя!')
+    name = await client_socket.recv()
+    client = Client(name, client_socket)
+    all_clients.append(client)
+    await message_recv(client)
 
 
-async def message_recv(client_socket: websockets.WebSocketClientProtocol):
+async def message_recv(client: Client) -> None:
     while True:
-        new_message = await client_socket.recv()
+        new_message = await client.client_socket.recv()
         print('data from client', new_message)
         await send_message(message=new_message)
 
