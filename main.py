@@ -11,19 +11,23 @@ async def send_message(message: str) -> None:
 
 
 async def new_client_connected(client_socket: websockets.WebSocketClientProtocol, path: str) -> None:
-    print('New client connected', path)
     await client_socket.send('Введите ваше имя!')
     name = await client_socket.recv()
     client = Client(name, client_socket)
     all_clients.append(client)
+    await client_socket.send('Привет: __{}__'.format(name))
     await message_recv(client)
 
 
 async def message_recv(client: Client) -> None:
     while True:
         new_message = await client.client_socket.recv()
-        print('data from client', new_message)
-        await send_message(message=new_message)
+        message = add_name_client_in_message(client, new_message)
+        await send_message(message=message)
+
+
+def add_name_client_in_message(client: Client, new_message: str):
+    return '{}:::{} '.format(client.name, new_message)
 
 
 async def start_server() -> None:
