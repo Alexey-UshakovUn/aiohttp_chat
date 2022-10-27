@@ -12,7 +12,10 @@ async def send_message(message: str):
 async def new_client_connected(client_socket: websockets.WebSocketClientProtocol, path: str):
     print('New client connected', path)
     all_clients.append(client_socket)
+    await message_recv(client_socket)
 
+
+async def message_recv(client_socket: websockets.WebSocketClientProtocol):
     while True:
         new_message = await client_socket.recv()
         print('data from client', new_message)
